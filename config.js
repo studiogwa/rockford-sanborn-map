@@ -4,7 +4,7 @@
 // ============================================================
 
 // Bump this on every deploy so browsers never mix old data with new code.
-const BUILD = "2026-10-09h";
+const BUILD = "2026-10-09j";
 
 const CONFIG = {
   // Mapbox public access token (pk...), same one used on the Rockford survey map.

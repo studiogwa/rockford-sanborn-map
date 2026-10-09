@@ -10,7 +10,13 @@
 // Its info.json advertises one huge tile, which makes Allmaps reserve ~13 MB of GPU memory per
 // sheet and crashes phones. Re-declare the tiles as half-size, so the same whole-image
 // requests are made but each sheet only reserves ~3 MB. Nothing else about the data changes.
+// Phones/tablets only: desktops have the graphics memory for full-resolution sheets, so they keep
+// Chronoscope's full 1646 px detail. (?lowmem=1 / ?lowmem=0 forces either mode for testing.)
+const _lm = new URLSearchParams(location.search).get('lowmem');
+const LOW_MEMORY = _lm !== null ? _lm === '1'
+  : (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/i.test(navigator.platform)) || window.matchMedia('(pointer: coarse)').matches);
 (function () {
+  if (!LOW_MEMORY) return;
   const realFetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const url = typeof input === 'string' ? input : (input && input.url) || '';
@@ -193,7 +199,7 @@ async function init() {
       requestViewportBufferRatio: 1,
       pruneViewportBufferRatio: 1.5,
       anticipateInteraction: false,
-      maxDevicePixelRatio: 1,
+      maxDevicePixelRatio: LOW_MEMORY ? 1 : 0,
     });
     sanborn = new AllmapsMapbox.WarpedMapLayer(layerOptions);
     map.addLayer(sanborn, firstSymbol);
@@ -597,8 +603,6 @@ function bindMapInteractions() {
         <a class="mp-btn" href="${link}" target="_blank" rel="noopener">Open at Library of Congress &#8599;</a>`)
       .addTo(map);
   });
-  map.on('mouseenter', 'sheets-fill', () => { if (!map.getCanvas().style.cursor) map.getCanvas().style.cursor = 'help'; });
-  map.on('mouseleave', 'sheets-fill', () => { if (map.getCanvas().style.cursor === 'help') map.getCanvas().style.cursor = ''; });
 
   // Allmaps reports image loading through map events (see adapter).
   map.on('allrequestedtilesloaded', () => { if (!els.mapStatus.classList.contains('is-error')) hideStatus(); });
@@ -611,16 +615,41 @@ function bindUI() {
     els.searchInput.value = '';
     els.searchBox.classList.remove('has-value');
     els.searchResults.innerHTML = '';
+    geoSeq++;
+    if (geoMarker) { geoMarker.remove(); geoMarker = null; }
   });
   els.snapshotBack.addEventListener('click', deselectParcel);
   els.snapCopy.addEventListener('click', copyShareLink);
   els.snapShare.addEventListener('click', shareParcel);
 }
 
+let geoTimer = null;
+let geoSeq = 0;
+let geoMarker = null;
+const ROCKFORD_BBOX = '-89.30,42.15,-88.90,42.40';
+
+function surveyResultsHtml(matches) {
+  return matches.map((f) => {
+    const p = f.properties;
+    const flags = [];
+    if (p.tif === 'Y') flags.push('<span class="sr-flag on-tif">TIF</span>');
+    if (p.oz === 'Y') flags.push('<span class="sr-flag on-oz">OZ</span>');
+    if (p.rerz === 'Y') flags.push('<span class="sr-flag on-rerz">RERZ</span>');
+    return `<div class="search-result-item" data-id="${esc(p.id)}">
+      <div class="sr-title">${esc(p.address || 'Unknown address')}</div>
+      <div class="sr-sub">${esc(p.building_name || 'Surveyed industrial property')}</div>
+      ${flags.length ? `<div class="sr-flags">${flags.join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
 function onSearchInput() {
-  const q = els.searchInput.value.trim().toLowerCase();
+  const raw = els.searchInput.value.trim();
+  const q = raw.toLowerCase();
   els.searchBox.classList.toggle('has-value', q.length > 0);
   if (q) sheetExpandFn?.();
+  clearTimeout(geoTimer);
+  geoSeq++;
   if (!q) { els.searchResults.innerHTML = ''; return; }
 
   const matches = parcelsData.features.filter((f) => {
@@ -631,27 +660,86 @@ function onSearchInput() {
       (p.current_owner && p.current_owner.toLowerCase().includes(q)) ||
       (p.original_industry && p.original_industry.toLowerCase().includes(q))
     );
-  }).slice(0, 12);
+  }).slice(0, 5);
 
-  if (!matches.length) {
-    els.searchResults.innerHTML = '<div class="search-no-results">No surveyed properties match that search.</div>';
-    return;
+  renderSearchResults(matches, [], raw.length < 3);
+  if (raw.length >= 3) {
+    const seq = geoSeq;
+    geoTimer = setTimeout(() => geocode(raw, seq, matches), 250);
   }
-  els.searchResults.innerHTML = matches.map((f) => {
-    const p = f.properties;
-    const flags = [];
-    if (p.tif === 'Y') flags.push('<span class="sr-flag on-tif">TIF</span>');
-    if (p.oz === 'Y') flags.push('<span class="sr-flag on-oz">OZ</span>');
-    if (p.rerz === 'Y') flags.push('<span class="sr-flag on-rerz">RERZ</span>');
-    return `<div class="search-result-item" data-id="${esc(p.id)}">
-      <div class="sr-title">${esc(p.address || 'Unknown address')}</div>
-      <div class="sr-sub">${esc(p.building_name || '')}</div>
-      ${flags.length ? `<div class="sr-flags">${flags.join('')}</div>` : ''}
-    </div>`;
-  }).join('');
-  els.searchResults.querySelectorAll('.search-result-item').forEach((el) => {
+}
+
+function renderSearchResults(matches, places, waiting) {
+  let html = '';
+  if (matches.length) html += '<div class="sr-group">Surveyed industrial properties</div>' + surveyResultsHtml(matches);
+  if (places.length) {
+    html += '<div class="sr-group">Rockford addresses</div>' + places.map((pl, i) =>
+      `<div class="search-result-item" data-place="${i}">
+        <div class="sr-title">${esc(pl.title)}</div>
+        <div class="sr-sub">${esc(pl.sub)}</div>
+      </div>`).join('');
+  }
+  if (!html) html = waiting ? '' : '<div class="search-no-results">Searching…</div>';
+  els.searchResults.innerHTML = html;
+  els.searchResults.querySelectorAll('[data-id]').forEach((el) => {
     el.addEventListener('click', () => selectParcel(el.dataset.id, true));
   });
+  els.searchResults.querySelectorAll('[data-place]').forEach((el) => {
+    el.addEventListener('click', () => selectPlace(places[Number(el.dataset.place)]));
+  });
+}
+
+async function geocode(text, seq, matches) {
+  try {
+    const c = CONFIG.INITIAL_CENTER;
+    const url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(text) + '.json'
+      + '?access_token=' + encodeURIComponent(CONFIG.MAPBOX_TOKEN)
+      + '&bbox=' + ROCKFORD_BBOX + '&proximity=' + c[0] + ',' + c[1]
+      + '&types=address,poi&autocomplete=true&limit=6&country=us';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('geocoder ' + res.status);
+    const data = await res.json();
+    if (seq !== geoSeq) return;                       // a newer keystroke has superseded this
+    const places = (data.features || []).map((f) => {
+      const parts = (f.place_name || '').split(', ');
+      return { title: parts[0] || f.text, sub: parts.slice(1, 3).join(', '), center: f.center, name: f.place_name };
+    });
+    if (!places.length && !matches.length) {
+      els.searchResults.innerHTML = '<div class="search-no-results">No Rockford addresses match that search.</div>';
+      return;
+    }
+    renderSearchResults(matches, places, false);
+  } catch (e) {
+    if (seq !== geoSeq) return;
+    if (!matches.length) els.searchResults.innerHTML = '<div class="search-no-results">Address search is unavailable right now.</div>';
+  }
+}
+
+function pointInRing(pt, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function pointInGeometry(pt, g) {
+  const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+  return polys.some((poly) => pointInRing(pt, poly[0]) && !poly.slice(1).some((h) => pointInRing(pt, h)));
+}
+
+function selectPlace(pl) {
+  els.searchResults.innerHTML = '';
+  els.searchInput.value = pl.title;
+  // If the address sits on a surveyed property, show that property's profile.
+  const hit = parcelsData.features.find((f) => pointInGeometry(pl.center, f.geometry));
+  if (hit) { if (geoMarker) { geoMarker.remove(); geoMarker = null; } selectParcel(hit.properties.id, true); return; }
+  if (selectedId !== null) deselectParcel();
+  if (geoMarker) geoMarker.remove();
+  geoMarker = new mapboxgl.Marker({ color: '#2f5d50' }).setLngLat(pl.center)
+    .setPopup(new mapboxgl.Popup({ offset: 24, closeButton: false }).setText(pl.name)).addTo(map);
+  geoMarker.togglePopup();
+  map.flyTo({ center: pl.center, zoom: Math.max(map.getZoom(), 17), duration: 900 });
 }
 
 // ---------------- Select / deselect a surveyed property ----------------
