@@ -158,12 +158,10 @@ async function init() {
 
   setSplashProgress(60, 'Preparing the Sanborn layer…');
   if (window.AllmapsMapbox && webglOk()) {
-    // Phones have far less graphics memory than laptops, and iOS Safari closes the tab when it
-    // runs out ("A problem repeatedly occurred"). On small screens ask Allmaps to keep fewer
-    // sheet images in memory: smaller overview budget and no extra buffer around the screen.
-    const lite = window.matchMedia('(max-width: 860px)').matches
-      || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      || new URLSearchParams(window.location.search).has('lite');
+    // Keep the number of sheet-image requests and the memory they need modest on every device:
+    // ask for standard-density tiles and a small overview budget. The Library of Congress image
+    // server answers slowly, so fewer, coarser tiles make the sheets appear much sooner.
+    const lite = true;
     const layerOptions = { layerId: 'sanborn' };
     if (lite) Object.assign(layerOptions, {
       maxTotalOverviewResolutionRatio: 4,
