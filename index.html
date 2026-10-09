@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rockford Sanborn Fire Insurance Maps — Studio GWA</title>
+<meta name="description" content="Compare Rockford's historic Sanborn fire insurance maps (1897, 1913, 1950, 1951) with today's map. Choose an edition, fade the sheets, and open any sheet at the Library of Congress." />
+<meta property="og:title" content="Rockford Sanborn Fire Insurance Maps — Studio GWA" />
+<meta property="og:description" content="Georeferenced Sanborn maps of Rockford, Illinois over today's map, with Studio GWA's historic industrial property survey." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://api.mapbox.com" />
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+
+<link rel="stylesheet" href="style.css?v=2026-10-09c" />
+<link rel="icon" href="assets/gwa-moniker-solid.png" />
+
+<!-- Google Analytics (GA4) — replace G-XXXXXXXXXX with the real Measurement ID before publishing.
+     See DEPLOYMENT.md § Google Analytics. Until a real ID is in place this block is inert. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+</head>
+<body>
+
+<!-- ===================== SPLASH SCREEN ===================== -->
+<div id="splash">
+  <div class="splash-inner">
+    <img src="assets/gwa-logo-notag-white.png" alt="Studio GWA" class="splash-logo" />
+    <h1 class="splash-title">Rockford Sanborn<br />Fire Insurance Maps</h1>
+    <p class="splash-place">City of Rockford</p>
+    <p class="splash-sub" id="splash-status">Loading survey data&hellip;</p>
+    <div class="splash-bar"><div class="splash-bar-fill" id="splash-progress"></div></div>
+  </div>
+</div>
+
+<!-- ===================== HEADER ===================== -->
+<header id="site-header">
+  <a href="https://www.studiogwa.com" target="_blank" rel="noopener" class="header-brand">
+    <img src="assets/gwa-logo.png" alt="Studio GWA" class="header-logo" />
+    <span class="header-tagline">Plan &middot; Design &middot; Develop</span>
+  </a>
+  <div class="header-title">
+    <span class="header-title-main">Rockford Sanborn Fire Insurance Maps</span>
+    <span class="header-title-short">Rockford Sanborn Maps</span>
+    <span class="header-title-sub" id="header-sub">Historic maps over today&rsquo;s map</span>
+  </div>
+</header>
+
+<!-- ===================== MAIN LAYOUT ===================== -->
+<main id="app">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div id="sheet-handle" class="sheet-handle" aria-hidden="true"><span class="sheet-handle-bar"></span></div>
+
+    <div class="sidebar-search-block">
+      <h2 class="sidebar-hed" id="hed">What stood here<br/><em>in 1913?</em></h2>
+      <p class="sidebar-copy">Fade between Rockford&rsquo;s Sanborn fire insurance maps and today&rsquo;s map. Pick an edition, adjust the opacity, and click any sheet to open it at the Library of Congress.</p>
+      <div class="search-box">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="search-input" placeholder="Search an address&hellip;" autocomplete="off" />
+        <button id="search-clear" class="search-clear" title="Clear" aria-label="Clear search">&times;</button>
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+
+    <!-- Edition, opacity and layers (desktop). The same controls are built into the
+         floating Layers panel on mobile; app.js fills both. -->
+    <div class="sidebar-legend" id="controls-desktop"></div>
+
+    <div id="empty-state" class="empty-state">
+      <img src="assets/gwa-ellipsis.png" alt="" class="empty-icon-ellipsis" />
+      <h3>Compare then and now</h3>
+      <p>Choose an edition above, then click a sheet for its Library of Congress record. Search an address to see its survey profile.</p>
+    </div>
+
+    <!-- ============ PROPERTY SNAPSHOT PANEL ============ -->
+    <div id="snapshot" class="snapshot hidden">
+      <button id="snapshot-back" class="snapshot-back">&larr; Back to map</button>
+
+      <div class="snapshot-header">
+        <h2 id="snap-address">&mdash;</h2>
+        <p id="snap-buildingname" class="snap-buildingname"></p>
+        <div class="snapshot-actions">
+          <button id="snap-copy" class="icon-btn" title="Copy link"><span>&#128279;</span> Copy link</button>
+          <button id="snap-share" class="icon-btn" title="Share"><span>&#8599;</span> Share</button>
+        </div>
+        <span id="snap-toast" class="snap-toast">Link copied to clipboard</span>
+      </div>
+
+      <div class="snapshot-status">
+        <div class="status-row" id="status-tif">
+          <span class="status-icon"></span>
+          <span class="status-label">TIF District</span>
+          <span class="status-value" id="status-tif-value">&mdash;</span>
+        </div>
+        <div class="status-row" id="status-oz">
+          <span class="status-icon"></span>
+          <span class="status-label">Opportunity Zone</span>
+          <span class="status-value" id="status-oz-value">&mdash;</span>
+        </div>
+        <div class="status-row" id="status-rerz">
+          <span class="status-icon"></span>
+          <span class="status-label">River Edge Redevelopment Zone</span>
+          <span class="status-value" id="status-rerz-value">&mdash;</span>
+        </div>
+      </div>
+
+      <div class="snapshot-body">
+        <h3 class="snap-sectionhed">Property Profile</h3>
+        <dl class="snap-facts" id="snap-facts"></dl>
+
+        <div id="snap-notes-wrap" class="snap-notes-wrap hidden">
+          <h3 class="snap-sectionhed">Notes</h3>
+          <p id="snap-notes" class="snap-notes"></p>
+        </div>
+
+        <img src="assets/gwa-ellipsis.png" alt="" class="snap-ellipsis" />
+
+        <p class="snap-footnote">Property data: Studio GWA Historic Industrial Property Survey &middot; City of Rockford GIS (TIF, OZ, RERZ boundaries). Not legal, financial, or tax advice.</p>
+      </div>
+    </div>
+
+    <p class="sidebar-credit">Sanborn maps: Library of Congress, Geography and Map Division. Sheets placed on today&rsquo;s map automatically by <a href="https://mapsnap.org" target="_blank" rel="noopener">mapsnap</a> using OpenStreetMap street data (&copy; OpenStreetMap contributors, ODbL) and may be off by a block in places. Prepared by Studio GWA for discussion purposes.</p>
+  </aside>
+
+  <!-- Map -->
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="map-status" class="map-status hidden" role="status"></div>
+
+    <!-- Mobile-only floating panel (desktop uses the sidebar) -->
+    <div id="mobile-layers" class="mobile-layers">
+      <button id="mobile-layers-toggle" class="mobile-layers-toggle" type="button" aria-expanded="false" aria-controls="mobile-layers-panel">
+        <span class="mobile-layers-icn">&#9635;</span> Maps &amp; layers
+      </button>
+      <div id="mobile-layers-panel" class="mobile-layers-panel hidden"></div>
+    </div>
+  </div>
+</main>
+
+<script src="config.js?v=2026-10-09c"></script>
+<script src="vendor/allmaps-mapbox.js?v=2026-10-09c"></script>
+<script src="app.js?v=2026-10-09c"></script>
+</body>
+</html>

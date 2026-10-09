@@ -1,0 +1,744 @@
+/* ============================================================
+   Rockford Sanborn Fire Insurance Maps — styles
+   Studio GWA brand palette (brand manual v1.0):
+     light green  #96ac53
+     mid green    #7ba457
+     dark green   #779354
+     dark grey    #454948
+     light grey   #8b9987
+   ============================================================ */
+
+/* ---- Fonts -------------------------------------------------
+   Brand manual specifies Gilroy (headlines/body) and Surveyor
+   Text (subheads/captions). Those are licensed fonts — drop the
+   .ttf/.woff files into /fonts and uncomment the @font-face
+   blocks below to swap in the real typefaces. Until then we use
+   close free substitutes (Poppins / Lora) via Google Fonts.
+------------------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap");
+
+/*
+@font-face {
+  font-family: "Gilroy";
+  src: url("fonts/Gilroy-Light.woff2") format("woff2");
+  font-weight: 300;
+}
+@font-face {
+  font-family: "Gilroy";
+  src: url("fonts/Gilroy-Regular.woff2") format("woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Gilroy";
+  src: url("fonts/Gilroy-Medium.woff2") format("woff2");
+  font-weight: 500;
+}
+@font-face {
+  font-family: "Gilroy";
+  src: url("fonts/Gilroy-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+}
+@font-face {
+  font-family: "Surveyor Text";
+  src: url("fonts/SurveyorText-Book.woff2") format("woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Surveyor Text";
+  src: url("fonts/SurveyorText-BookItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+}
+*/
+
+:root {
+  --gwa-light-green: #96ac53;
+  --gwa-mid-green: #7ba457;
+  --gwa-dark-green: #779354;
+  --gwa-dark-grey: #454948;
+  --gwa-light-grey: #8b9987;
+  /* accent for RERZ boundaries — a warm, earthy tone from outside the core
+     palette so TIF (green) / OZ (grey) / RERZ (terracotta) read as three
+     clearly distinct hues on the map, while still complementing the greens */
+  --gwa-rerz-accent: #b5764a;
+
+  --gwa-green-tint: #eef2e6;
+  --gwa-border: #dde2d8;
+  --gwa-bg: #fafaf8;
+  --gwa-white: #ffffff;
+  --gwa-text: #2f3230;
+  --gwa-text-muted: #6b7169;
+
+  --font-heading: "Gilroy", "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Gilroy", "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Surveyor Text", "Lora", Georgia, serif;
+
+  --header-h: 72px;
+}
+
+* { box-sizing: border-box; }
+img { max-width: 100%; }
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: var(--font-body);
+  color: var(--gwa-text);
+  background: var(--gwa-bg);
+}
+
+button { font-family: inherit; cursor: pointer; }
+
+/* ===================== SPLASH ===================== */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 120% at 50% 0%, #8ba361 0%, var(--gwa-dark-green) 45%, var(--gwa-dark-grey) 100%);
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+#splash.splash-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.splash-inner {
+  text-align: center;
+  color: var(--gwa-white);
+  padding: 0 24px;
+  max-width: 560px;
+}
+.splash-logo {
+  height: 44px;
+  margin-bottom: 36px;
+  opacity: 0.95;
+}
+.splash-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.2;
+  margin: 0 0 18px;
+  letter-spacing: -0.01em;
+}
+.splash-place {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: 19px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 22px;
+  opacity: 0.9;
+}
+.splash-place::before,
+.splash-place::after {
+  content: "";
+  display: inline-block;
+  width: 26px;
+  height: 1px;
+  background: rgba(255,255,255,0.45);
+  vertical-align: middle;
+  margin: 0 14px 4px;
+}
+.splash-sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  opacity: 0.85;
+  margin: 0 0 28px;
+}
+.splash-bar {
+  width: 220px;
+  height: 3px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 3px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.splash-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--gwa-white);
+  transition: width 0.35s ease;
+}
+
+/* ===================== HEADER ===================== */
+#site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gwa-white);
+  border-bottom: 1px solid var(--gwa-border);
+  padding: 0 24px;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.header-logo {
+  height: 30px;
+  width: auto;
+  max-width: none;
+  flex-shrink: 0;
+  display: block;
+}
+.header-tagline {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--gwa-text-muted);
+  border-left: 1px solid var(--gwa-border);
+  padding-left: 12px;
+  display: none;
+}
+@media (min-width: 640px) {
+  .header-tagline { display: inline; }
+}
+.header-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.header-title-main {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--gwa-dark-grey);
+  line-height: 1.25;
+}
+.header-title-sub {
+  font-size: 12px;
+  color: var(--gwa-light-grey);
+  margin-top: 2px;
+}
+
+/* The full title is long; on narrow screens a short form takes over. */
+.header-title-short { display: none; }
+@media (max-width: 860px) {
+  .header-title-main { display: none; }
+  .header-title-short {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--gwa-dark-grey);
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+}
+
+/* ===================== LAYOUT ===================== */
+#app {
+  position: fixed;
+  top: var(--header-h);
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+}
+
+#sidebar {
+  width: 400px;
+  min-width: 400px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--gwa-white);
+  border-right: 1px solid var(--gwa-border);
+  display: flex;
+  flex-direction: column;
+}
+
+#map-wrap {
+  flex: 1;
+  position: relative;
+}
+#map { position: absolute; inset: 0; }
+
+/* ---- Mobile: bottom sheet over a full-screen map (Option A) ----
+   The map fills the whole screen below the header; the sidebar becomes
+   a draggable sheet anchored to the bottom with three snap positions:
+     collapsed — just the handle + search bar peeking up
+     half      — panel covers ~48% of the screen, map still visible above it
+     full      — panel covers nearly the whole screen, for reading details
+   Tapping the handle cycles collapsed -> half -> full -> collapsed.
+   Dragging snaps to whichever position is closest on release.
+   Desktop (>860px) is completely unaffected by this block. ------------- */
+.sheet-handle { display: none; }
+
+/* ---- Floating layer toggle (mobile only) ---- */
+.mobile-layers {
+  display: none;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 350;
+}
+.mobile-layers-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gwa-white);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gwa-text);
+}
+.mobile-layers-icn { font-size: 12px; color: var(--gwa-mid-green); }
+.mobile-layers-panel {
+  margin-top: 8px;
+  background: var(--gwa-white);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  padding: 14px 16px;
+  min-width: 220px;
+}
+.mobile-layers-panel .legend-list { gap: 12px; }
+.mobile-layers-panel label { font-size: 14px; }
+
+/* ===================== SEARCH ===================== */
+.sidebar-search-block { padding: 24px 24px 16px; border-bottom: 1px solid var(--gwa-border); }
+.sidebar-hed {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.35;
+  margin: 0 0 8px;
+  color: var(--gwa-text);
+}
+.sidebar-hed em {
+  font-style: italic;
+  font-family: var(--font-serif);
+  color: var(--gwa-dark-green);
+}
+.sidebar-copy {
+  font-size: 13.5px;
+  color: var(--gwa-text-muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--gwa-border);
+  border-radius: 10px;
+  background: var(--gwa-bg);
+  padding: 0 10px;
+  transition: border-color 0.15s ease;
+}
+.search-box:focus-within { border-color: var(--gwa-mid-green); background: var(--gwa-white); }
+.search-icon { font-size: 14px; opacity: 0.55; margin-right: 8px; }
+#search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14.5px;
+  padding: 11px 4px;
+  color: var(--gwa-text);
+  font-family: var(--font-body);
+}
+.search-clear {
+  border: none;
+  background: none;
+  color: var(--gwa-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+  display: none;
+}
+.search-box.has-value .search-clear { display: block; }
+
+.search-results {
+  margin-top: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  border-radius: 10px;
+}
+.search-results:not(:empty) {
+  border: 1px solid var(--gwa-border);
+}
+.search-result-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gwa-border);
+  transition: background 0.1s ease;
+}
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover, .search-result-item.active { background: var(--gwa-green-tint); }
+.sr-title { font-size: 13.5px; font-weight: 600; color: var(--gwa-text); }
+.sr-sub { font-size: 12px; color: var(--gwa-text-muted); margin-top: 1px; }
+.sr-flags { display: flex; gap: 5px; margin-top: 5px; }
+.sr-flag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+.sr-flag.on-tif { background: rgba(123,164,87,0.16); color: var(--gwa-mid-green); }
+.sr-flag.on-oz { background: rgba(69,73,72,0.12); color: var(--gwa-dark-grey); }
+.sr-flag.on-rerz { background: rgba(181,118,74,0.16); color: var(--gwa-rerz-accent); }
+.search-no-results { padding: 14px 12px; font-size: 13px; color: var(--gwa-text-muted); }
+
+/* ===================== LEGEND ===================== */
+.sidebar-legend { padding: 16px 24px; border-bottom: 1px solid var(--gwa-border); }
+.sidebar-legend h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gwa-light-grey);
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.legend-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.legend-list label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gwa-text); cursor: pointer; }
+.legend-list input { accent-color: var(--gwa-mid-green); }
+.swatch { width: 13px; height: 13px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+.swatch-tif { background: var(--gwa-mid-green); opacity: 0.6; border: 1.5px solid var(--gwa-mid-green); }
+.swatch-oz { background: var(--gwa-dark-grey); opacity: 0.55; border: 1.5px solid var(--gwa-dark-grey); }
+.swatch-rerz { background: var(--gwa-rerz-accent); opacity: 0.65; border: 1.5px solid var(--gwa-rerz-accent); }
+
+/* ===================== EMPTY STATE ===================== */
+.empty-state {
+  padding: 48px 28px;
+  text-align: center;
+  color: var(--gwa-text-muted);
+  flex: 1;
+}
+.empty-icon-ellipsis { display: block; height: 10px; width: auto; max-width: 90px; margin: 0 auto 18px; opacity: 0.6; }
+.empty-state h3 { font-family: var(--font-heading); font-size: 16px; color: var(--gwa-text); margin: 0 0 8px; }
+.empty-state p { font-size: 13px; line-height: 1.55; margin: 0; }
+
+.hidden { display: none !important; }
+
+/* ===================== SNAPSHOT PANEL ===================== */
+.snapshot { flex: 1; display: flex; flex-direction: column; }
+.snapshot-back {
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 16px 24px 0;
+  font-size: 12.5px;
+  color: var(--gwa-dark-green);
+  font-weight: 600;
+}
+.snapshot-header { padding: 10px 24px 16px; border-bottom: 1px solid var(--gwa-border); position: relative; }
+.snapshot-header h2 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  color: var(--gwa-text);
+}
+.snap-buildingname {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--gwa-dark-green);
+  margin: 0 0 14px;
+}
+.snapshot-actions { display: flex; gap: 8px; }
+.icon-btn {
+  border: 1px solid var(--gwa-border);
+  background: var(--gwa-white);
+  color: var(--gwa-text);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.icon-btn:hover { background: var(--gwa-green-tint); border-color: var(--gwa-mid-green); }
+.snap-toast {
+  position: absolute;
+  top: 12px;
+  right: 24px;
+  background: var(--gwa-dark-grey);
+  color: var(--gwa-white);
+  font-size: 11.5px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+.snap-toast.show { opacity: 1; transform: translateY(0); }
+
+.snapshot-status {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--gwa-border);
+  background: var(--gwa-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.status-row { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+.status-icon {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gwa-white);
+  background: #c7cbc4;
+}
+.status-row.is-yes .status-icon { background: var(--gwa-mid-green); }
+.status-row.is-yes .status-icon::after { content: "\2713"; }
+.status-row.is-no .status-icon::after { content: "\2013"; }
+.status-label { color: var(--gwa-text); font-weight: 500; flex: 1; }
+.status-value { color: var(--gwa-text-muted); font-size: 12.5px; text-align: right; max-width: 150px; }
+.status-row.is-yes .status-value { color: var(--gwa-dark-green); font-weight: 600; }
+
+.snapshot-body { padding: 18px 24px 28px; overflow-y: auto; flex: 1; }
+.snap-sectionhed {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gwa-light-grey);
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+.snap-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin: 0 0 22px; }
+.snap-fact dt { font-size: 11px; color: var(--gwa-text-muted); margin-bottom: 2px; }
+.snap-fact dd { font-size: 13.5px; color: var(--gwa-text); margin: 0; font-weight: 500; }
+.snap-fact.full { grid-column: 1 / -1; }
+
+.snap-notes-wrap { margin-bottom: 22px; }
+.snap-notes { font-size: 13px; line-height: 1.55; color: var(--gwa-text); background: var(--gwa-bg); border-radius: 8px; padding: 12px 14px; margin: 0; }
+
+.snap-nearby { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.snap-nearby-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid var(--gwa-border);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.snap-nearby-item:hover { border-color: var(--gwa-mid-green); background: var(--gwa-green-tint); }
+.snap-nearby-dist { color: var(--gwa-text-muted); font-size: 11.5px; }
+.snap-nearby-empty { font-size: 12.5px; color: var(--gwa-text-muted); }
+
+.snap-ellipsis { display: block; height: 14px; opacity: 0.55; margin: 4px 0 16px; }
+.snap-footnote { font-size: 11px; color: var(--gwa-light-grey); line-height: 1.5; margin: 0; }
+
+/* ===================== MAP POPUP ===================== */
+.mapboxgl-popup-content {
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.mp-title { font-family: var(--font-heading); font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--gwa-text); }
+.mp-sub { font-size: 12px; color: var(--gwa-text-muted); margin-bottom: 8px; }
+.mp-flags { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+.mp-btn {
+  display: inline-block;
+  background: var(--gwa-dark-green);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Mapbox default control tweaks */
+.mapboxgl-ctrl-top-right { top: 12px; right: 12px; }
+.mapboxgl-ctrl-group { border-radius: 8px !important; overflow: hidden; }
+
+/* ============================================================
+   MOBILE OVERRIDES (Option A — bottom sheet)
+   Deliberately placed at the very end of the file: every rule in
+   here needs to win the cascade over its desktop counterpart above,
+   and since a @media block carries no extra specificity, source
+   order is what decides — so this must come last, not first.
+   ============================================================ */
+@media (max-width: 860px) {
+  #app { flex-direction: column; }
+
+  #map-wrap { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: 0; height: auto; }
+
+  #sidebar {
+    position: fixed;
+    top: var(--header-h);
+    left: 0; right: 0; bottom: 0;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    border-right: none;
+    border-top: 1px solid var(--gwa-border);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -6px 20px rgba(0,0,0,0.14);
+    z-index: 400;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    transform: translateY(var(--sheet-y, calc(100% - 108px)));
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+  #sidebar.sheet-dragging { transition: none; }
+
+  .sheet-handle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0 12px;
+    cursor: grab;
+    touch-action: none;
+    flex-shrink: 0;
+  }
+  .sheet-handle-bar { width: 36px; height: 4px; border-radius: 2px; background: var(--gwa-border); }
+
+  .sidebar-hed, .sidebar-copy { display: none; }
+  .sidebar-search-block { padding: 0 20px 14px; border-bottom: none; flex-shrink: 0; }
+
+  /* iOS Safari auto-zooms the page on focus if an input's font-size is
+     under 16px — bump it here (mobile only) to prevent that. */
+  #search-input { font-size: 16px; }
+
+  /* Layer toggles move to a floating control over the map (see
+     .mobile-layers above) so the sheet stays focused on search/results. */
+  .sidebar-legend { display: none; }
+
+  .mobile-layers { display: block; }
+}
+
+
+/* ============================================================
+   SANBORN ADDITIONS: edition buttons, opacity, layer rows,
+   sheet popup, map status, credit line
+   ============================================================ */
+.ctl-block { margin: 0 0 18px; }
+.ctl-block:last-child { margin-bottom: 0; }
+.ctl-hed {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gwa-light-grey);
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.year-seg {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.year-btn {
+  border: 1.5px solid var(--gwa-border);
+  background: var(--gwa-white);
+  color: var(--gwa-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 9px 0;
+  border-radius: 8px;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.year-btn:hover { border-color: var(--gwa-mid-green); background: var(--gwa-green-tint); }
+.year-btn.is-active {
+  background: var(--gwa-dark-green);
+  border-color: var(--gwa-dark-green);
+  color: var(--gwa-white);
+}
+.year-today {
+  width: 100%;
+  border: 1px dashed var(--gwa-border);
+  background: transparent;
+  color: var(--gwa-text-muted);
+  font-size: 12px;
+  padding: 7px 0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.year-today:hover { border-color: var(--gwa-mid-green); color: var(--gwa-dark-green); }
+.year-today.is-active { border-style: solid; border-color: var(--gwa-dark-green); color: var(--gwa-dark-green); font-weight: 600; }
+.edition-note {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--gwa-text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+.edition-note .link-btn {
+  border: none; background: none; padding: 0; margin-left: 6px;
+  font-family: var(--font-body); font-style: normal; font-weight: 600;
+  font-size: 12px; color: var(--gwa-dark-green); text-decoration: underline;
+}
+.opacity-row { display: flex; align-items: center; gap: 12px; }
+.opacity-row input[type="range"] { flex: 1; accent-color: var(--gwa-mid-green); min-width: 0; }
+.opacity-out { font-size: 12.5px; font-weight: 600; color: var(--gwa-text); width: 38px; text-align: right; }
+.opacity-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--gwa-light-grey); margin-top: 2px; }
+.swatch-survey { background: var(--gwa-dark-grey); opacity: 0.55; border: 1.5px solid var(--gwa-dark-grey); }
+.swatch-footprints { background: transparent; border: 1.5px solid #8b9987; }
+.swatch-sheets { background: transparent; border: 1.5px dashed var(--gwa-dark-grey); }
+
+.map-status {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 300;
+  background: var(--gwa-dark-grey);
+  color: var(--gwa-white);
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  max-width: min(90%, 460px);
+  text-align: center;
+}
+.map-status.is-error { background: #8c3b2b; }
+
+.sidebar-credit {
+  font-size: 11px;
+  color: var(--gwa-light-grey);
+  line-height: 1.5;
+  margin: 0;
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--gwa-border);
+}
+.sidebar-credit a { color: var(--gwa-dark-green); }
+.mp-sub + .mp-sub { margin-top: -4px; }
+
+.mobile-layers-panel .ctl-block { margin-bottom: 16px; }
+.mobile-layers-panel { max-height: 70vh; overflow-y: auto; width: min(320px, calc(100vw - 24px)); }
+
+@media (max-width: 860px) {
+  .sidebar-credit { padding: 12px 20px 20px; }
+}
+
+/* Keep the header subtitle on one line on narrow screens */
+@media (max-width: 860px) {
+  .header-title-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw; font-size: 11px; }
+}
+
+/* Base map selector: same buttons as the edition row, sized to however many maps are offered */
+.base-seg { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+.legend-static { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gwa-text); margin: 4px 0 0; }
