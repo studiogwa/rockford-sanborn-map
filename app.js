@@ -158,7 +158,23 @@ async function init() {
 
   setSplashProgress(60, 'Preparing the Sanborn layer…');
   if (window.AllmapsMapbox && webglOk()) {
-    sanborn = new AllmapsMapbox.WarpedMapLayer({ layerId: 'sanborn' });
+    // Phones have far less graphics memory than laptops, and iOS Safari closes the tab when it
+    // runs out ("A problem repeatedly occurred"). On small screens ask Allmaps to keep fewer
+    // sheet images in memory: smaller overview budget and no extra buffer around the screen.
+    const lite = window.matchMedia('(max-width: 860px)').matches
+      || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      || new URLSearchParams(window.location.search).has('lite');
+    const layerOptions = { layerId: 'sanborn' };
+    if (lite) Object.assign(layerOptions, {
+      maxTotalOverviewResolutionRatio: 4,
+      overviewRequestViewportBufferRatio: 1.5,
+      overviewPruneViewportBufferRatio: 2,
+      requestViewportBufferRatio: 1,
+      pruneViewportBufferRatio: 1.5,
+      anticipateInteraction: false,
+      maxDevicePixelRatio: 1,
+    });
+    sanborn = new AllmapsMapbox.WarpedMapLayer(layerOptions);
     map.addLayer(sanborn, firstSymbol);
     sanborn.setOpacity(state.opacity);
   } else {
