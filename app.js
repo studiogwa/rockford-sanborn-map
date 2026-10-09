@@ -6,6 +6,29 @@
 // + the Studio GWA historic industrial property survey.
 // ============================================================
 
+// Chronoscope serves each Sanborn sheet only as a whole image (1646x1949 and three smaller sizes).
+// Its info.json advertises one huge tile, which makes Allmaps reserve ~13 MB of GPU memory per
+// sheet and crashes phones. Re-declare the tiles as half-size, so the same whole-image
+// requests are made but each sheet only reserves ~3 MB. Nothing else about the data changes.
+(function () {
+  const realFetch = window.fetch.bind(window);
+  window.fetch = function (input, init) {
+    const url = typeof input === 'string' ? input : (input && input.url) || '';
+    if (url.indexOf('cdn.chronoscope.io') === -1 || !/info\.json(\?|$)/.test(url)) {
+      return realFetch(input, init);
+    }
+    return realFetch(input, init).then((res) => {
+      if (!res.ok) return res;
+      return res.clone().json().then((info) => {
+        if (info && info.width && info.height) {
+          info.tiles = [{ width: Math.ceil(info.width / 2), height: Math.ceil(info.height / 2), scaleFactors: [2, 4, 8] }];
+        }
+        return new Response(JSON.stringify(info), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }).catch(() => res);
+    });
+  };
+})();
+
 mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
 
 let map;

@@ -4,7 +4,7 @@
 // ============================================================
 
 // Bump this on every deploy so browsers never mix old data with new code.
-const BUILD = "2026-10-09f";
+const BUILD = "2026-10-09h";
 
 const CONFIG = {
   // Mapbox public access token (pk...), same one used on the Rockford survey map.
@@ -29,7 +29,7 @@ const CONFIG = {
   //   "loc"         Library of Congress originals, tiled (default; safe on phones)
   //   "chronoscope" quarter-size copies, but each sheet is one huge tile and crashes iPhones
   // Both use the same georeferencing; only the image address differs.
-  IMAGE_SOURCE: "loc",
+  IMAGE_SOURCE: "chronoscope",
 
   // Edition shown on first load, and starting opacity of the historic sheets
   DEFAULT_YEAR: "1913",
